@@ -104,3 +104,21 @@ ggplot(data = output_allcities, mapping = aes(x = reorder(city, -OR), y = OR, co
 ```
 
 From the graph, we see that 43/47 cities except `Tampa, FL`, `Birmingham, AL`, `Durham, NC` showed a higher aOR estimation of homicide solving rate in white victim comparing to non-whites. Whatsmore, although we don't the similar trend in the three cities mentioned above, these three have a larger confidence interval. This indicates a higher possibility of less precise estimation. The graph is in a descending order based on the estimation of aOR.
+
+
+##Problem 2
+
+**Clean and tidy data**
+```{r, results=FALSE, message= FALSE, warning=FALSE}
+bbweight_raw = read_csv("./birthweight.csv", col_types = "dddddddddddddddddddd") 
+cor(bbweight_raw)
+bbweight = bbweight_raw %>%
+  mutate(babysex = as.factor(ifelse(babysex == 1, "Male", "Female")),
+         malform = as.factor(ifelse(malform == 1, "present", "absent")),
+         frace = as.factor(frace),
+         mrace = as.factor(mrace))
+missing_rate = 1-nrow(as.data.frame(complete.cases(bbweight)))/nrow(bbweight)
+```
+
+Based on some literature review and previous knowledge, I would like to include `babysex`, `bhead`, `blength`, `wtgain`, and `smoken` when I first look through the dataset. However, after checking for correlation, we know that `mrace` and `frace` are hightly correlated with a correlation of 0.83, thus we don't include these two in the same model to prevent multicollinearity. Same applies to `ppbmi` and `ppwt` and `delwt`. Next, I use stepwise selection to build a model statistically, and later use the previous literature review results to polish the model.
+
