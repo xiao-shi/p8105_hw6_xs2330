@@ -1,0 +1,32 @@
+---
+title: "p8105_hw6_xs2330"
+author: "Xiao Shi"
+date: "November 15, 2018"
+output: github_document
+---
+## Problem 1
+Using tidyverse library for data cleaning and analysis, leaps for stepwise selection, and the rest for cross validation
+```{r setup, warning= FALSE, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(modelr)
+library(leaps)
+library(mgcv)
+```
+
+**Data cleaning and tidying**
+```{r, message = FALSE, warning= FALSE}
+raw_homicide = read_csv("./homicide-data.csv") 
+homicide = raw_homicide %>%
+  mutate(city_state = str_c(city, state, sep = ", ")) %>%
+  mutate(case_status = recode(disposition, "Closed without arrest" = "unsolved", 
+                      "Open/No arrest" = "unsolved",
+                      "Closed by arrest" = "solved")) %>%
+  filter(city_state != "Dallas, TX" & city_state != "Phoenix, AZ" & city_state != "Kansas City, MO" & city_state != "Tulsa, AL") %>%
+  mutate(race_general = ifelse(victim_race == "White", "white","non_white"),
+         victim_age = as.numeric(victim_age),
+         race_general = fct_relevel(as.factor(race_general),"white")) %>%
+  janitor::clean_names()
+
+```
+Upon removing cities that do not have information that we need, and mutate variables such as `victim_age` and `victim_race`, the resulting dataset consists `r nrow(homicide)` rows by `r ncol(homicide)` columns.
