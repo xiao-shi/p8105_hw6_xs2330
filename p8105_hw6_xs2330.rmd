@@ -30,3 +30,30 @@ homicide = raw_homicide %>%
 
 ```
 Upon removing cities that do not have information that we need, and mutate variables such as `victim_age` and `victim_race`, the resulting dataset consists `r nrow(homicide)` rows by `r ncol(homicide)` columns.
+
+**Fitting model for Baltimore, MD**
+
+This is a logistic regression with resolved vs unresolved as the outcome and `victim_age`, `victim_sex` and `race_general` (as just defined) as predictors.
+```{r}
+balti_homicide = homicide %>%
+  filter(city_state == "Baltimore, MD") %>%
+  mutate(case_status = ifelse(case_status == "solved",1,0))
+
+glm_case_status = glm(case_status ~ victim_age + victim_sex + race_general, data = balti_homicide, family = binomial())
+output_glm_case_status = summary(glm_case_status)
+save(output_glm_case_status,file = "./homicide_balti.rdata")
+```
+
+Tidy the results and compare the adjusted odds ratio for solving homicides comparing white victims to non-white victims keeping all other variables fixed in Baltimore, MD.
+```{r}
+glm_case_status %>% 
+  broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         OR_lower = exp(estimate - std.error * 1.96),
+         OR_upper = exp(estimate + std.error * 1.96)) %>%
+  select(term, OR, OR_lower, OR_upper, p.value) %>% 
+  knitr::kable(digits = 3)
+```
+
+From the above table, we see that homicide cases among non-whites are much less likely to be solved compared to cases among white people. The adjusted odds ratio is 0.441 with a p-value of 0.0000027, indicating statistically significant difference at a 95% confidence level.
+
